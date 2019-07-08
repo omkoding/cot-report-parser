@@ -16,36 +16,36 @@ class CotTest extends TestCase
 		$this->assertSame($report, [
 			"current" => [
 				"non-commercial" => [
-					"long" => "164,639",
-					"short" => "153,469",
-					"spreads" => "19,095",
+					"long" => 164639,
+					"short" => 153469,
+					"spreads" => 19095,
 				],
 				"commercial" => [
-					"long" => "277,060",
-					"short" => "310,471",
+					"long" => 277060,
+					"short" => 310471,
 				],
 			],
 			"changes" => [
 				"non-commercial" => [
-					"long" => "-8,696",
-					"short" => "-11,903",
-					"spreads" => "5,389",
+					"long" => -8696,
+					"short" => -11903,
+					"spreads" => 5389,
 				],
 				"commercial" => [
-					"long" => "23,044",
-					"short" => "26,696",
+					"long" => 23044,
+					"short" => 26696,
 				],
 			],
 			"open-interest" => [
-				"current" => "550,492",
+				"current" => 550492,
 				"non-commercial" => [
-					"long" => "29.9",
-					"short" => "27.9",
-					"spreads" => "3.5",
+					"long" => 29.9,
+					"short" => 27.9,
+					"spreads" => 3.5,
 				],
 				"commercial" => [
-					"long" => "50.3",
-					"short" => "56.4",
+					"long" => 50.3,
+					"short" => 56.4,
 				],
 			],
 		]);
