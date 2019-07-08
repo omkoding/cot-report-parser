@@ -63,47 +63,47 @@ class Report
 		foreach ($symbols as $key => $symbol) {
 			foreach ($lines as $index => $line) {
 				if ($this->startsWith($line, $symbol . ' - ')) {
-					$openInterest = preg_split('/\s+/', trim($lines[$index + 7]));
+					$openInterest = str_replace(',', '', preg_split('/\s+/', trim($lines[$index + 7])));
 
-					$current = preg_split('/\s+/', trim($lines[$index + 9]));
+					$current = str_replace(',', '', preg_split('/\s+/', trim($lines[$index + 9])));
 
-					$changes = preg_split('/\s+/', trim($lines[$index + 12]));
+					$changes = str_replace(',', '', preg_split('/\s+/', trim($lines[$index + 12])));
 
 					$percent = preg_split('/\s+/', trim($lines[$index + 15]));
 
 					$result[$symbol] = [
 						'current' => [
 							'non-commercial' => [
-								'long' => $current[0],
-								'short' => $current[1],
-								'spreads' => $current[2],
+								'long' => (int) $current[0],
+								'short' => (int) $current[1],
+								'spreads' => (int) $current[2],
 							],
 							'commercial' => [
-								'long' => $current[3],
-								'short' => $current[4],
+								'long' => (int) $current[3],
+								'short' => (int) $current[4],
 							],
 						],
 						'changes' => [
 							'non-commercial' => [
-								'long' => $changes[0],
-								'short' => $changes[1],
-								'spreads' => $changes[2],
+								'long' => (int) $changes[0],
+								'short' => (int) $changes[1],
+								'spreads' => (int) $changes[2],
 							],
 							'commercial' => [
-								'long' => $changes[3],
-								'short' => $changes[4],
+								'long' => (int) $changes[3],
+								'short' => (int) $changes[4],
 							],
 						],
 						'open-interest' => [
-							'current' => end($openInterest),
+							'current' => (int) end($openInterest),
 							'non-commercial' => [
-								'long' => $percent[0],
-								'short' => $percent[1],
-								'spreads' => $percent[2],
+								'long' => (float) $percent[0],
+								'short' => (float) $percent[1],
+								'spreads' => (float) $percent[2],
 							],
 							'commercial' => [
-								'long' => $percent[3],
-								'short' => $percent[4],
+								'long' => (float) $percent[3],
+								'short' => (float) $percent[4],
 							],
 						],
 					];
