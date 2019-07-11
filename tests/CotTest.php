@@ -4,16 +4,20 @@ namespace OmKoding\Cot\Tests;
 
 use OmKoding\Cot\Report;
 use OmKoding\Cot\Symbol;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use OmKoding\Cot\Exceptions\InvalidDateException;
+use OmKoding\Cot\Exceptions\InvalidSymbolException;
 
 class CotTest extends TestCase
 {
 	public function testReportByDate(): void
 	{
-		$report = (new Report)->byDate('09/11/2018', Symbol::EURO_FX);
+		$report = (new Report)->byDate('09/11/18', Symbol::EURO_FX);
 
 		$this->assertSame($report, [
+			"slug" => "EURO_FX",
+			"symbol" => "EURO FX",
+			"date" => "2018-09-11",
 			"current" => [
 				"non-commercial" => [
 					"long" => 164639,
@@ -53,9 +57,16 @@ class CotTest extends TestCase
 
 	public function testInvalidDate(): void
 	{
-		$this->expectException(InvalidArgumentException::class);
+		$this->expectException(InvalidDateException::class);
 
-		$report = (new Report)->byDate('25/02/2018', Symbol::EURO_FX);
+		$report = (new Report)->byDate('25/02/18', Symbol::EURO_FX);
+	}
+
+	public function testInvalidSymbol(): void
+	{
+		$this->expectException(InvalidSymbolException::class);
+
+		$report = (new Report)->byDate('09/11/18', 'INVALID_SYMBOL');
 	}
 
 	public function testReportLatest(): void

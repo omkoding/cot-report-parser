@@ -5,7 +5,9 @@ namespace OmKoding\Cot;
 use DateTime;
 use ReflectionClass;
 use GuzzleHttp\Client;
-use InvalidArgumentException;
+use OmKoding\Cot\Exceptions\ResponseException;
+use OmKoding\Cot\Exceptions\InvalidDateException;
+use OmKoding\Cot\Exceptions\InvalidSymbolException;
 
 class Report
 {
@@ -13,46 +15,68 @@ class Report
 
 	public function __construct()
 	{
-		$this->client = new Client;
+		$this->client = new Client([
+			'http_errors' => false,
+		]);
 	}
 
-	public function latest($symbol)
+	public function latest($symbol = null)
 	{
+		$this->validateSymbol($symbol);
+
 		$url = 'https://www.cftc.gov/dea/futures/deacmesf.htm';
 
-		$response = $this->client->get($url);
-
-		$parsed = $this->parse((string) $response->getBody());
+		$parsed = $this->fetchAndParse($url);
 
 		return $symbol ? $parsed[$symbol] : $parsed;
 	}
 
-    public function byDate($date, $symbol)
+    public function byDate($date, $symbol = null)
     {
-        $d = DateTime::createFromFormat('m/d/Y', $date);
-
-        if ($d->format('m/d/Y') != $date) {
-            throw new InvalidArgumentException('Date format must be m/d/Y');            
-        }
+        $this->validateDate($date);
 
         list($month, $day, $year) = explode('/', $date);
 
+		$this->validateSymbol($symbol);
+
         $url = sprintf(
             'https://www.cftc.gov/sites/default/files/files/dea/cotarchives/%s/futures/deacmesf%s%s%s.htm',
-            $year,
+            date('Y', strtotime($date)),
             $month,
             $day,
-            substr($year, -2)
+            $year
         );
 
-        $response = $this->client->get($url);
-
-        $parsed = $this->parse((string) $response->getBody());
+        $parsed = $this->fetchAndParse($url);
 
         return $symbol ? $parsed[$symbol] : $parsed;
     }
 
-	protected function parse(string $html): array
+    public function validateDate($date): void
+    {
+    	$format = 'm/d/y';
+
+    	$d = DateTime::createFromFormat($format, $date);
+
+        if (! $d || $d->format($format) != $date) {
+            throw new InvalidDateException("Date format must be {$format}");
+        }
+    }
+
+    private function validateSymbol($symbol): void
+    {
+    	if (! $symbol) {
+    		return;
+    	}
+
+    	$symbols = Symbol::all();
+    	
+    	if (! in_array($symbol, $symbols)) {
+    		throw new InvalidSymbolException("Symbol '$symbol' is not exists.");
+    	}
+    }
+
+	private function parse(string $html): array
 	{
 		$lines = explode(PHP_EOL, $html);
 
@@ -60,9 +84,11 @@ class Report
 
 		$result = [];
 
-		foreach ($symbols as $key => $symbol) {
+		foreach ($symbols as $slug => $symbol) {
 			foreach ($lines as $index => $line) {
 				if ($this->startsWith($line, $symbol . ' - ')) {
+					$date = preg_split('/\s+/', trim($lines[$index + 1]));
+
 					$openInterest = str_replace(',', '', preg_split('/\s+/', trim($lines[$index + 7])));
 
 					$current = str_replace(',', '', preg_split('/\s+/', trim($lines[$index + 9])));
@@ -72,6 +98,9 @@ class Report
 					$percent = preg_split('/\s+/', trim($lines[$index + 15]));
 
 					$result[$symbol] = [
+						'slug' => $slug,
+						'symbol' => $symbol,
+						'date' => date('Y-m-d', strtotime($date[5])),
 						'current' => [
 							'non-commercial' => [
 								'long' => (int) $current[0],
@@ -116,10 +145,23 @@ class Report
 		return $result;
 	}
 
-	protected function startsWith($haystack, $needle)
+	private function startsWith($haystack, $needle)
 	{
 	     $length = strlen($needle);
 
 	     return (substr($haystack, 0, $length) === $needle);
+	}
+
+	private function fetchAndParse($url)
+	{
+		$response = $this->client->get($url);
+
+		if ($response->getStatusCode() != 200) {
+			throw new ResponseException("URL was returned with code: " . $response->getStatusCode());
+		}
+
+        $parsed = $this->parse((string) $response->getBody());
+        
+        return $parsed;	
 	}
 }

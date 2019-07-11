@@ -21,9 +21,12 @@ use OmKoding\Cot\Symbol;
 $report = new Report;
 
 // get latest report
+$report->latest();
+
+// get latest report by symbol
 $report->latest(Symbol::EURO_FX);
 
-// get by date
+// get by date and symbol
 $report->byDate('09/11/2018', Symbol::EURO_FX);
 
 // list all symbol
@@ -34,6 +37,9 @@ Symbol::all();
 
 ```
 array:3 [
+  "slug" => "EURO_FX",
+  "symbol" => "EURO FX",
+  "date" => "2018-09-11",
   "current" => array:2 [
     "non-commercial" => array:3 [
       "long" => 164639
