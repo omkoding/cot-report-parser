@@ -22,7 +22,7 @@ class Report
 
 	public function latest($symbol = null)
 	{
-		$this->validateSymbol($symbol);
+		self::validateSymbol($symbol);
 
 		$url = 'https://www.cftc.gov/dea/futures/deacmesf.htm';
 
@@ -33,11 +33,11 @@ class Report
 
     public function byDate($date, $symbol = null)
     {
-        $this->validateDate($date);
+        self::validateDate($date);
 
         list($month, $day, $year) = explode('/', $date);
 
-		$this->validateSymbol($symbol);
+		self::validateSymbol($symbol);
 
         $url = sprintf(
             'https://www.cftc.gov/sites/default/files/files/dea/cotarchives/%s/futures/deacmesf%s%s%s.htm',
@@ -52,10 +52,8 @@ class Report
         return $symbol ? $parsed[$symbol] : $parsed;
     }
 
-    public function validateDate($date): void
+    static public function validateDate($date, $format = 'm/d/y'): void
     {
-    	$format = 'm/d/y';
-
     	$d = DateTime::createFromFormat($format, $date);
 
         if (! $d || $d->format($format) != $date) {
@@ -63,7 +61,7 @@ class Report
         }
     }
 
-    private function validateSymbol($symbol): void
+    static public function validateSymbol($symbol): void
     {
     	if (! $symbol) {
     		return;
@@ -90,6 +88,8 @@ class Report
 					$date = preg_split('/\s+/', trim($lines[$index + 1]));
 
 					$openInterest = str_replace(',', '', preg_split('/\s+/', trim($lines[$index + 7])));
+
+					$openInterestChange = str_replace(',', '', preg_split('/\s+/', trim($lines[$index + 11])));
 
 					$current = str_replace(',', '', preg_split('/\s+/', trim($lines[$index + 9])));
 
@@ -125,6 +125,7 @@ class Report
 						],
 						'open-interest' => [
 							'current' => (int) end($openInterest),
+							'change' => (int) rtrim(end($openInterestChange), ')'),
 							'non-commercial' => [
 								'long' => (float) $percent[0],
 								'short' => (float) $percent[1],

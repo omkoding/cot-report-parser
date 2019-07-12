@@ -47,6 +47,10 @@ class Symbol
 
     static public function all(): array
     {
-        return (new ReflectionClass(self::class))->getConstants();
+        $symbols = (new ReflectionClass(self::class))->getConstants();
+
+		asort($symbols);
+
+        return $symbols;
     }
 }

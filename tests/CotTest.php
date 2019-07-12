@@ -42,6 +42,7 @@ class CotTest extends TestCase
 			],
 			"open-interest" => [
 				"current" => 550492,
+				"change" => 22913,
 				"non-commercial" => [
 					"long" => 29.9,
 					"short" => 27.9,
